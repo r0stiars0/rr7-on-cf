@@ -33,9 +33,9 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return <div><Welcome message={loaderData.message} />
-    <React.Suspense fallback={<div className="mx-auto max-w-7xl text-center font-semibold text-gray-100 text-2xl">Loading ...</div>}>
+    <React.Suspense fallback={<div className="mx-auto max-w-7xl text-center font-semibold text-2xl">Loading ...</div>}>
       <Await resolve={loaderData.membersCount}>
-        {(value) => <h3 className="mx-auto max-w-7xl text-center font-semibold text-gray-100 text-2xl">Non critical value: {value}</h3>}
+        {(value) => <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Non critical value: {value}</h3>}
       </Await>
     </React.Suspense>
   </div>;
