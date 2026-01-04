@@ -2,6 +2,7 @@ import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
 import React from "react";
 import { Await } from "react-router";
+import { prisma } from "../lib/prisma";
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -21,19 +22,17 @@ export function meta({ }: Route.MetaArgs) {
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  const delayMsRange = [2000, 5000]
-  const ms = Math.trunc(delayMsRange[0] + Math.random() * (delayMsRange[1] - delayMsRange[0]));
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE, ms:ms, slowerMessage: simulatedDelay("This is a longer message",ms) };
+export async function loader({ context }: Route.LoaderArgs) {
+
+  const membersCount = await prisma.member.count();
+
+
+
+  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE, membersCount: membersCount };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return <div><Welcome message={loaderData.message} />
-
-    <React.Suspense fallback={<div className="mx-auto max-w-7xl text-center font-semibold text-2xl">Loading in {loaderData.ms} ms...</div>}>
-      <Await resolve={loaderData.slowerMessage}>
-        {(value) => <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Non critical value: {value}</h3>}
-      </Await>
-    </React.Suspense>
+    <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Members Count: {loaderData.membersCount}</h3>
   </div>;
 }
