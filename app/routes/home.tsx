@@ -24,7 +24,7 @@ export function meta({ }: Route.MetaArgs) {
 
 export async function loader({ context }: Route.LoaderArgs) {
 
-  const membersCount = await prisma.member.count();
+  const membersCount = prisma.member.count().then(u => u);
 
 
 
@@ -33,6 +33,10 @@ export async function loader({ context }: Route.LoaderArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return <div><Welcome message={loaderData.message} />
-    <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Members Count: {loaderData.membersCount}</h3>
+    <React.Suspense fallback={<div className="mx-auto max-w-7xl text-center font-semibold text-gray-100 text-2xl">Loading ...</div>}>
+      <Await resolve={loaderData.membersCount}>
+        {(value) => <h3 className="mx-auto max-w-7xl text-center font-semibold text-gray-100 text-2xl">Non critical value: {value}</h3>}
+      </Await>
+    </React.Suspense>
   </div>;
 }
