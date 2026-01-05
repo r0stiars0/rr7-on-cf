@@ -3,7 +3,9 @@ import { Welcome } from "../welcome/welcome";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "generated/prisma/client";
 
-import {  env } from 'prisma/config'
+import { env } from 'prisma/config'
+import React from "react";
+import { Await } from "react-router";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -13,20 +15,29 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const connectionString = env('DATABASE_URL')
+
+   const timeNow = Date.now();
+  const connectionString = env('DATABASE_URL');
+
 
   const adapter = new PrismaPg({ connectionString })
   const prisma = new PrismaClient({ adapter })
-  console.log("Calculate members...");
-  const membersCount = await prisma.member.count();
-  console.log("Members count:", membersCount);
 
 
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE, membersCount: membersCount };
+  const membersCount =  new Promise(resolve => prisma.member.count().then(resolve));
+
+
+
+  return { membersCount: membersCount, elapsedTime : Date.now() - timeNow };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  return <div><Welcome message={loaderData.message} />
-    <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Non critical value: {loaderData.membersCount}</h3>
+  return <div>
+    <div className="mx-auto max-w-7xl text-center font-semibold text-2xl">Loader elapsed time: {loaderData.elapsedTime} ms</div>
+    <React.Suspense fallback={<div className="mx-auto max-w-7xl text-center font-semibold text-2xl">Loading ...</div>}>
+      <Await resolve={loaderData.membersCount}>
+        {(value) => <h3 className="mx-auto max-w-7xl text-center font-semibold text-2xl">Members Count: {value}</h3>}
+      </Await>
+    </React.Suspense>
   </div>;
 }
