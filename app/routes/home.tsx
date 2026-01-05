@@ -3,7 +3,7 @@ import { Welcome } from "../welcome/welcome";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "generated/prisma/client";
 
-
+import {  env } from 'prisma/config'
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -13,7 +13,7 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 export async function loader({ context }: Route.LoaderArgs) {
-  const connectionString = `${process.env.DATABASE_URL}`
+  const connectionString = env('DATABASE_URL')
 
   const adapter = new PrismaPg({ connectionString })
   const prisma = new PrismaClient({ adapter })
